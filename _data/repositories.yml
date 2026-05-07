@@ -4,13 +4,22 @@
 
 repo_description_lines_max: 2
 
+# github_repos:
+#   - iC2MC/.github
+#   - iC2MC/PyC2MC_viewer
+  
 github_repos:
-  - iC2MC
-  - iC2MC/PyC2MC_viewer
-  # - alshedivat/al-folio
-  # - jekyll/jekyll
-  # - twbs/bootstrap
-  # - jquery/jquery
-  # - FortAwesome/Font-Awesome
-  # - mathjax/MathJax
-  # - jpswalsh/academicons
+  - repo: iC2MC/ic2mc.github.io
+    description: Website of the iC2MC joint laboratory
+  - repo: iC2MC/PyC2MC_viewer
+    description: >
+      This package, called PyC2MC viewer, has been in development since 2020
+      and is based on the commonly used Python language with the goal of being
+      improvable even by people outside of the initial project. Indeed, the 
+      goal of this work is to provide a robust data visualization tool producing
+      numerous plots as well as statistical analysis to ease the sample 
+      molecular fingerprinting and the inter-sample comparison. With the aim to 
+      deliver an easy-to-use application, we use a PyQT based graphical 
+      user interface designed under QtDesigner. Most of the application’s 
+      features are based on the molecular formula attributed by either 
+      constructor or third-party software.
