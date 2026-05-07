@@ -9,8 +9,9 @@ from pathlib import Path
 # =========================
 # CONFIG
 # =========================
-GV_KEY = "e36e6d6fc548ec6dd6021c5a103de5b1"
-API_KEY = GV_KEY
+home = Path.home()
+GV_KEY = home / ".scopus_api_key"
+API_KEY = GV_KEY.read_text().strip()
 
 SCOPUS_SEARCH_URL = "https://api.elsevier.com/content/search/scopus"
 
@@ -239,6 +240,7 @@ def build_database():
 
     enriched = []
 
+    print("Number of Scopus records:", len(scopus_records))
     step = max(1, len(scopus_records) // 10)
     for i, record in enumerate(scopus_records):
         if i % step == 0:

@@ -35,6 +35,8 @@ fetch('/assets/data/biblio_stats.json')
     document.getElementById('charts').style.display = 'block';
 
     const blue = '#2e4283';
+    const orange = '#e07b2e';
+
     const layout_base = {
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor:  'rgba(0,0,0,0)',
@@ -42,6 +44,7 @@ fetch('/assets/data/biblio_stats.json')
     };
 
     // per year production
+    // -------------------
     Plotly.newPlot('chart-pub-year', [
     {
         x: Object.keys(data.publications_per_year),
@@ -57,8 +60,8 @@ fetch('/assets/data/biblio_stats.json')
         mode: 'lines+markers',
         name: 'Citations',
         yaxis: 'y2',
-        line: { color: '#e07b2e', width: 2 },
-        marker: { color: '#e07b2e' }
+        line: { color: orange, width: 2 },
+        marker: { color: orange }
     }
     ], Object.assign({}, layout_base, {
     yaxis:  { title: 'Publications', rangemode: 'tozero' },
@@ -110,7 +113,8 @@ fetch('/assets/data/biblio_stats.json')
     ]
     }));
 
-    // Top journaux
+    // Top journals
+    // ------------
     const journals = Object.entries(data.top_journals)
       .sort((a, b) => a[1] - b[1]);
     Plotly.newPlot('chart-journals', [{
@@ -125,6 +129,7 @@ fetch('/assets/data/biblio_stats.json')
     });
 
     // Concepts — treemap
+    // -------------------
     const concepts = Object.entries(data.concepts).slice(0, 30);
     Plotly.newPlot('chart-concepts', [{
       type: 'treemap',
@@ -134,25 +139,41 @@ fetch('/assets/data/biblio_stats.json')
       marker: { colorscale: [[0, '#c8d0e8'], [1, blue]] }
     }], { ...layout_base, margin: { t: 0 } });
 
-    // Réseau de co-auteurs
+    // Coauthor network
+    // ----------------
     const network = data.coauthor_network;
     const mainAuthors = new Set(network.main_authors);
+    const authorCounts = network.author_pub_count;  // ← remonté ici
 
-    // Construire les nœuds
-    const authorCounts = network.author_pub_count;
-    const nodes = Object.keys(authorCounts);
+    const MIN_COPUBS = 4;
 
-    // Layout circulaire simple
-    const n = nodes.length;
+    // Filtrer les liens
+    const filteredLinks = Object.entries(network.links)
+    .filter(([key, weight]) => weight >= MIN_COPUBS);
+
+    // Garder uniquement les auteurs qui apparaissent dans les liens filtrés
+    const connectedAuthors = new Set();
+    filteredLinks.forEach(([key]) => {
+    const [a1, a2] = key.split('|');
+    connectedAuthors.add(a1);
+    connectedAuthors.add(a2);
+    });
+
+    // Nœuds filtrés
+    const nodes = Object.keys(authorCounts)
+    .filter(n => connectedAuthors.has(n));  // ← supprime le doublon
+
+    // Layout circulaire
+    const nNodes = nodes.length;  // ← renommé pour éviter conflit avec const n
     const nodeX = {}, nodeY = {};
     nodes.forEach((name, i) => {
-    const angle = (2 * Math.PI * i) / n;
+    const angle = (2 * Math.PI * i) / nNodes;
     nodeX[name] = Math.cos(angle);
     nodeY[name] = Math.sin(angle);
     });
 
     // Liens
-    const linkTraces = Object.entries(network.links).map(([key, weight]) => {
+    const linkTraces = filteredLinks.map(([key, weight]) => {
     const [a1, a2] = key.split('|');
     if (!nodeX[a1] || !nodeX[a2]) return null;
     return {
@@ -178,8 +199,8 @@ fetch('/assets/data/biblio_stats.json')
     hoverinfo: 'text',
     marker: {
         size: nodes.map(n => Math.max(8, Math.min(30, authorCounts[n] * 2))),
-        color: nodes.map(n => mainAuthors.has(n) ? blue : 'rgba(46, 66, 131, 0.3)'),
-        line: { width: 1, color: blue }
+        color: nodes.map(n => mainAuthors.has(n) ? blue : orange),
+        line: { width: 1, color: 'white' }
     },
     showlegend: false
     };
